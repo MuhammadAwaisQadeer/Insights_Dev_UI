@@ -1,0 +1,27 @@
+﻿@model List<Asset>
+
+<h2>Asset Inventory</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>IP Address</th>
+            <th>OS</th>
+            <th>Status</th>
+            <th>Risk Level</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var asset in Model)
+        {
+            <tr>
+                <td>@asset.Name</td>
+                <td>@asset.IPAddress</td>
+                <td>@asset.OperatingSystem</td>
+                <td>@asset.Status</td>
+                <td>@asset.RiskLevel</td>
+            </tr>
+        }
+    </tbody>
+</table>

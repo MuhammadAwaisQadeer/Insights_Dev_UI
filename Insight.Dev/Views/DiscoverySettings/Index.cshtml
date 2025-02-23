@@ -1,0 +1,29 @@
+﻿@model List<DiscoverySetting>
+
+<h2>Discovery Settings</h2>
+<a class="btn btn-success" asp-action="Create">Add New Setting</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Setting ID</th>
+            <th>Parameter</th>
+            <th>Value</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var setting in Model)
+        {
+            <tr>
+                <td>@setting.SettingId</td>
+                <td>@setting.Parameter</td>
+                <td>@setting.Value</td>
+                <td>
+                    <a class="btn btn-info" asp-action="Details" asp-route-id="@setting.SettingId">View Details</a>
+                    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@setting.SettingId">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,94 @@
+﻿@model List<Insight.Dev.Models.DiscoveredAsset>
+
+<h2>Asset Discovery Overview</h2>
+
+<!-- Summary Cards -->
+<div class="row">
+    <div class="col-md-4">
+        <div class="card border-primary text-center">
+            <div class="card-body">
+                <h5>Total Assets Discovered</h5>
+                <h2>@Model.Count</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-warning text-center">
+            <div class="card-body">
+                <h5>Assets Pending Classification</h5>
+                <h2>@Model.Count(a => !a.IsClassified)</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-danger text-center">
+            <div class="card-body">
+                <h5>Critical Assets</h5>
+                <h2>@Model.Count(a => a.Criticality == "High")</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Classification Actions -->
+<div class="mt-3">
+    <button id="approveAssets" class="btn btn-success">Approve Selected</button>
+    <button id="ignoreAssets" class="btn btn-warning">Ignore Selected</button>
+    <button id="falsePositiveAssets" class="btn btn-danger">Mark as False Positive</button>
+</div>
+
+<!-- Asset Table -->
+<h3 class="mt-4">Assets Pending Classification</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th><input type="checkbox" id="selectAll"></th>
+            <th>Hostname</th>
+            <th>IP Address</th>
+            <th>Asset Type</th>
+            <th>Criticality</th>
+            <th>Discovery Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var asset in Model.Where(a => !a.IsClassified))
+        {
+            <tr>
+                <td><input type="checkbox" class="selectAsset"></td>
+                <td>@asset.Hostname</td>
+                <td>@asset.IPAddress</td>
+                <td>@asset.AssetType</td>
+                <td>@asset.Criticality</td>
+                <td>@asset.DiscoveryDate.ToShortDateString()</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    document.getElementById("selectAll").addEventListener("change", function () {
+        let checkboxes = document.querySelectorAll(".selectAsset");
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+    function getSelectedAssets() {
+        return Array.from(document.querySelectorAll(".selectAsset:checked")).map(cb => cb.dataset.assetId);
+    }
+
+    document.getElementById("approveAssets").addEventListener("click", function() {
+        let selected = getSelectedAssets();
+        fetch("/api/discoveredasset/approve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(selected)
+        }).then(() => location.reload());
+    });
+
+    document.getElementById("ignoreAssets").addEventListener("click", function() {
+        let selected = getSelectedAssets();
+        fetch("/api/discoveredasset/ignore", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(selected)
+        }).then(() => location.reload());
+    });
+</script>

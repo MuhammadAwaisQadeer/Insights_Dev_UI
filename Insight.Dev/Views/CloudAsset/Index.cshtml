@@ -1,0 +1,156 @@
+﻿ <h2>Cloud Asset Inventory</h2>
+
+<!-- Filter by Provider -->
+<label for="providerFilter">Filter by Provider:</label>
+<select id="providerFilter" class="form-control" onchange="filterCloudAssets()">
+    <option value="All">All Providers</option>
+    <option value="AWS">AWS</option>
+    <option value="Azure">Azure</option>
+    <option value="GCP">GCP</option>
+    <option value="IBM Cloud">IBM Cloud</option>
+    <option value="Oracle Cloud">Oracle Cloud</option>
+    <option value="Alibaba Cloud">Alibaba Cloud</option>
+</select>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">Asset ID</th>
+            <th onclick="sortTable(1)">Provider</th>
+            <th onclick="sortTable(2)">Region</th>
+            <th onclick="sortTable(3)">Type</th>
+            <th onclick="sortTable(4)">Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="cloudAssetsTable">
+    </tbody>
+</table>
+
+<!-- Export Buttons -->
+<button class="btn btn-success" onclick="exportCSV()">Export to CSV</button>
+<button class="btn btn-danger" onclick="exportPDF()">Export to PDF</button>
+
+<script>
+    $(document).ready(function () {
+        loadCloudAssets();
+    });
+
+    function loadCloudAssets() {
+        $.getJSON("/api/cloud-assets/getAssets", function (data) {
+            updateTable(data);
+        });
+    }
+
+    function filterCloudAssets() {
+        var provider = $("#providerFilter").val();
+        $.getJSON("/api/cloud-assets/getAssets", function (data) {
+            if (provider !== "All") {
+                data = data.filter(asset => asset.provider === provider);
+            }
+            updateTable(data);
+        });
+    }
+
+    function updateTable(data) {
+        $("#cloudAssetsTable").empty();
+        data.forEach(asset => {
+            let statusColor = getStatusColor(asset.status);
+            let row = `<tr>
+                <td>${asset.assetId}</td>
+                <td>${asset.provider}</td>
+                <td>${asset.region}</td>
+                <td>${asset.type}</td>
+                <td style="color:${statusColor}"><strong>${asset.status}</strong></td>
+                <td><button class="btn btn-info">View Details</button></td>
+            </tr>`;
+            $("#cloudAssetsTable").append(row);
+        });
+    }
+
+    function getStatusColor(status) {
+        switch (status) {
+            case "Running": return "green";
+            case "Stopped": return "red";
+            case "Active": return "blue";
+            case "Pending": return "orange";
+            default: return "black";
+        }
+    }
+
+    function sortTable(columnIndex) {
+        let table = document.getElementById("cloudAssetsTable");
+        let rows = Array.from(table.rows);
+        rows.sort((a, b) => a.cells[columnIndex].innerText.localeCompare(b.cells[columnIndex].innerText));
+        $("#cloudAssetsTable").empty().append(rows);
+    }
+
+    function exportCSV() {
+        $.getJSON("/api/cloud-assets/getAssets", function (data) {
+            let csvContent = "data:text/csv;charset=utf-8,Asset ID,Provider,Region,Type,Status\n";
+            data.forEach(asset => {
+                csvContent += `${asset.assetId},${asset.provider},${asset.region},${asset.type},${asset.status}\n`;
+            });
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Cloud_Assets.csv");
+            document.body.appendChild(link);
+            link.click();
+        });
+    }
+
+    function exportPDF() {
+        $.getJSON("/api/cloud-assets/getAssets", function (data) {
+            let doc = new jsPDF();
+            doc.text("Cloud Asset Inventory", 10, 10);
+            let tableRows = data.map(asset => [asset.assetId, asset.provider, asset.region, asset.type, asset.status]);
+            doc.autoTable({ head: [["Asset ID", "Provider", "Region", "Type", "Status"]], body: tableRows });
+            doc.save("Cloud_Assets.pdf");
+        });
+    }
+</script>
+ 
+
+
+
+
+@* <h2>Cloud Asset Inventory</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Asset ID</th>
+            <th>Provider</th>
+            <th>Region</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="cloudAssetsTable">
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function() {
+        function loadCloudAssets() {
+            $.getJSON("/api/cloud-assets/getAssets", function(data) {
+                $("#cloudAssetsTable").empty();
+                data.forEach(asset => {
+                    let row = `<tr>
+                        <td>${asset.assetId}</td>
+                        <td>${asset.provider}</td>
+                        <td>${asset.region}</td>
+                        <td>${asset.type}</td>
+                        <td>${asset.status}</td>
+                        <td><button class="btn btn-info">View Details</button></td>
+                    </tr>`;
+                    $("#cloudAssetsTable").append(row);
+                });
+            });
+        }
+
+        loadCloudAssets();
+    });
+</script>
+ *@

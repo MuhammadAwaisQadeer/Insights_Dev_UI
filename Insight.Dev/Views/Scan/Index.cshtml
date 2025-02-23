@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initiate Network Scan</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .scan-container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .scan-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+
+            .scan-btn:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+        .progress {
+            display: none;
+            margin-top: 10px;
+            width: 100%;
+            background: #ddd;
+            height: 20px;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: green;
+            text-align: center;
+            color: white;
+            line-height: 20px;
+            border-radius: 5px;
+        }
+
+        .status-completed {
+            color: green;
+        }
+
+        .status-failed {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="mb-3">Initiate Network Scan</h2>
+
+        <div class="input-group">
+            <label>Scan Name:</label>
+            <input type="text" id="scanName" class="form-control" placeholder="Enter a unique scan name">
+        </div>
+
+        <div class="input-group">
+            <label>Network Range(s):</label>
+            <textarea id="networkRange" class="form-control" placeholder="Enter CIDR ranges (e.g., 192.168.1.0/24)"></textarea>
+        </div>
+
+        <div class="input-group">
+            <label>Scan Type:</label>
+            <select id="scanType" class="form-select">
+                <option value="quick">Quick Scan (Fast)</option>
+                <option value="full">Full Scan</option>
+            </select>
+        </div>
+
+        <button class="scan-btn" id="startScan">Start Scan</button>
+        <button class="scan-btn" id="cancelScan">Cancel</button>
+
+        <div class="progress">
+            <div id="scanProgressBar" class="progress-bar">0%</div>
+        </div>
+
+        <h3 class="mt-4">Recent Scans</h3>
+        <input type="text" id="searchInput" class="form-control" placeholder="Search scan name..." onkeyup="filterScans()">
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Scan Name</th>
+                    <th onclick="sortTable(1)">Network Range</th>
+                    <th onclick="sortTable(2)">Status</th>
+                    <th onclick="sortTable(3)">Last Run</th>
+                </tr>
+            </thead>
+            <tbody id="scanResults">
+                <tr><td colspan="4">No scans yet.</td></tr>
+            </tbody>
+        </table>
+
+        <button class="scan-btn" onclick="exportReport('csv')">Export CSV</button>
+        <button class="scan-btn" onclick="exportReport('pdf')">Export PDF</button>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            function loadRecentScans() {
+                $.ajax({
+                    url: "/api/scan/getScans",
+                    method: "GET",
+                    success: function(response) {
+                        $("#scanResults").empty();
+                        response.forEach(scan => {
+                            let statusClass = scan.status === "Completed" ? "status-completed" : "status-failed";
+                            let row = `<tr>
+                                <td>${scan.scanName}</td>
+                                <td>${scan.networkRange}</td>
+                                <td class="${statusClass}">${scan.status}</td>
+                                <td>${new Date(scan.lastRun).toLocaleString()}</td>
+                            </tr>`;
+                            $("#scanResults").append(row);
+                        });
+                    },
+                    error: function() {
+                        alert("Error fetching recent scans.");
+                    }
+                });
+            }
+
+            $("#startScan").click(function() {
+                let scanName = $("#scanName").val();
+                let networkRange = $("#networkRange").val();
+                let scanType = $("#scanType").val();
+
+                if (!scanName || !networkRange) {
+                    alert("Please enter a scan name and network range.");
+                    return;
+                }
+
+                $(".progress").show();
+                $("#scanProgressBar").css("width", "0%").text("0%");
+                $("#startScan").prop("disabled", true).text("Scanning...");
+
+                startProgress();
+
+                $.ajax({
+                    url: "/api/scan/startScan",
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        scanName: scanName,
+                        networkRange: networkRange,
+                        scanType: scanType
+                    }),
+                    success: function(response) {
+                        let statusClass = response.status === "Completed" ? "status-completed" : "status-failed";
+                        let row = `<tr>
+                            <td>${response.scanName}</td>
+                            <td>${response.networkRange}</td>
+                            <td class="${statusClass}">${response.status}</td>
+                            <td>${new Date(response.lastRun).toLocaleString()}</td>
+                        </tr>`;
+                        $("#scanResults").prepend(row);
+                        $(".progress").hide();
+                        $("#startScan").prop("disabled", false).text("Start Scan");
+                    },
+                    error: function(xhr) {
+                        alert("Error: " + xhr.responseText);
+                        $(".progress").hide();
+                        $("#startScan").prop("disabled", false).text("Start Scan");
+                    }
+                });
+            });
+
+            loadRecentScans();
+        });
+
+        function startProgress() {
+            let progress = 0;
+            const progressBar = $("#scanProgressBar");
+
+            const interval = setInterval(() => {
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    return;
+                }
+                progress += 10;
+                progressBar.css("width", progress + "%").text(progress + "%");
+            }, 500);
+        }
+
+        function filterScans() {
+            let input = $("#searchInput").val().toLowerCase();
+            $("#scanResults tr").each(function() {
+                $(this).toggle($(this).text().toLowerCase().includes(input));
+            });
+        }
+
+        function sortTable(colIndex) {
+            let rows = $("#scanResults tr").get();
+            rows.sort((a, b) => $(a).children().eq(colIndex).text().localeCompare($(b).children().eq(colIndex).text()));
+            $("#scanResults").append(rows);
+        }
+
+        function exportReport(type) {
+            window.location.href = `/api/reports/export/${type}`;
+        }
+    </script>
+</body>
+</html>
+

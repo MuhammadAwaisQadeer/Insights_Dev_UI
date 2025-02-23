@@ -1,0 +1,131 @@
+/* Global Font Scaling */
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+/* Bootstrap Button Focus Fix */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Ensure Footer Stays at Bottom */
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Container */
+.scan-container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Input Fields */
+.input-group {
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+/* Buttons */
+.scan-btn {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    margin-right: 10px;
+    border-radius: 5px;
+    transition: background 0.3s ease, transform 0.1s ease-in-out;
+}
+
+    .scan-btn:hover {
+        background-color: #0056b3;
+        transform: scale(1.02);
+    }
+
+    .scan-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+/* Progress Bar */
+.progress {
+    margin-top: 15px;
+    display: none;
+    width: 100%;
+    background: #ddd;
+    height: 20px;
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, #28a745, #218838);
+    text-align: center;
+    color: white;
+    line-height: 20px;
+    border-radius: 5px;
+    transition: width 0.5s ease-in-out;
+}
+
+/* Table Improvements */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Search Input */
+.search-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Footer */
+.footer {
+    margin-top: 20px;
+    text-align: center;
+    color: gray;
+    padding: 10px 0;
+    background: #fff;
+    border-top: 1px solid #ddd;
+}
