@@ -1,0 +1,57 @@
+﻿@model CloudAsset
+<h2>Cloud Asset Details</h2>
+
+<table class="table">
+    <tr>
+        <th>Asset ID:</th>
+        <td>@Model.AssetId</td>
+    </tr>
+    <tr>
+        <th>Provider:</th>
+        <td>@Model.Provider</td>
+    </tr>
+    <tr>
+        <th>Region:</th>
+        <td>@Model.Region</td>
+    </tr>
+    <tr>
+        <th>Type:</th>
+        <td>@Model.Type</td>
+    </tr>
+    <tr>
+        <th>Status:</th>
+        <td><strong style="color:@GetStatusColor(Model.Status)">@Model.Status</strong></td>
+    </tr>
+    <tr>
+        <th>Storage:</th>
+        <td>@Model.Storage GB</td>
+    </tr>
+    <tr>
+        <th>CPU:</th>
+        <td>@Model.CPU vCPUs</td>
+    </tr>
+    <tr>
+        <th>RAM:</th>
+        <td>@Model.RAM GB</td>
+    </tr>
+    <tr>
+        <th>Security Group:</th>
+        <td>@Model.SecurityGroup</td>
+    </tr>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>
+
+@functions {
+    string GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Running" => "green",
+            "Stopped" => "red",
+            "Active" => "blue",
+            "Pending" => "orange",
+            _ => "black"
+        };
+    }
+}

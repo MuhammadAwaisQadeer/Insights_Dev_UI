@@ -1,0 +1,20 @@
+﻿@model DiscoverySetting
+
+<h2>Edit Setting</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="SettingId" />
+
+    <div class="form-group">
+        <label asp-for="Parameter"></label>
+        <input type="text" class="form-control" asp-for="Parameter" readonly />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Value"></label>
+        <input type="text" class="form-control" asp-for="Value" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a class="btn btn-secondary" asp-action="Index">Cancel</a>
+</form>

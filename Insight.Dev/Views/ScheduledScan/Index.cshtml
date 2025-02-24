@@ -1,0 +1,110 @@
+﻿@model List<Insight.Dev.Models.ScheduledScan>
+
+<h2>Discovery Schedules</h2>
+
+<button class="btn btn-success mb-3">Add New Schedule</button>
+
+@if (Model == null || !Model.Any())
+{
+    <p>No scheduled scans found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Schedule ID</th>
+                <th>Name</th>
+                <th>Scan Type</th>
+                <th>Frequency</th>
+                <th>Start Time</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var scan in Model)
+            {
+                <tr>
+                    <td>@scan.ScheduleId</td>
+                    <td>@scan.Name</td>
+                    <td>@scan.ScanType</td>
+                    <td>@scan.Frequency</td>
+                    <td>@scan.StartTime</td>
+                    <td>
+                        <span class="badge @(scan.IsActive ? "badge-success" : "badge-danger")">
+                            @(scan.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary btn-sm">View</button>
+                        <button class="btn btn-warning btn-sm">Edit</button>
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<script>
+        $(document).ready(function() {
+        function loadSchedules() {
+            $.getJSON("/api/scheduledscan/getAll", function(data) {
+                $("#scheduleTable tbody").empty();
+                data.forEach(scan => {
+                    let statusBadge = scan.isActive ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>';
+                    let row = `<tr>
+                        <td>${scan.scheduleId}</td>
+                        <td>${scan.name}</td>
+                        <td>${scan.scanType}</td>
+                        <td>${scan.frequency}</td>
+                        <td>${scan.startTime}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm">View</button>
+                            <button class="btn btn-warning btn-sm">Edit</button>
+                            <button class="btn btn-danger btn-sm">Delete</button>
+                        </td>
+                    </tr>`;
+                    $("#scheduleTable tbody").append(row);
+                });
+            });
+        }
+
+        $("#addSchedule").click(function() {
+        let newScan = {
+            name: $("#scanName").val(),
+            scanType: $("#scanType").val(),
+            frequency: $("#scanFrequency").val(),
+            startTime: $("#scanTime").val(),
+            isActive: $("#scanStatus").is(":checked")
+        };
+
+        $.ajax({
+            url: "/api/scheduledscan/add",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(newScan),
+            success: function() {
+                loadSchedules();
+            }
+        });
+    });
+
+    $(document).on("click", ".delete-btn", function() {
+        let scanId = $(this).data("id");
+        $.ajax({
+            url: `/api/scheduledscan/delete/${scanId}`,
+            method: "DELETE",
+            success: function() {
+                loadSchedules();
+            }
+        });
+    });
+
+        loadSchedules();
+    });
+
+
+</script>

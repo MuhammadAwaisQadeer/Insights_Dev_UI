@@ -1,0 +1,40 @@
+﻿<h2>Scan Results</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Scan ID</th>
+            <th>Asset Name</th>
+            <th>IP Address</th>
+            <th>Scan Type</th>
+            <th>Result</th>
+            <th>Scan Time</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="scanResultsTable">
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function() {
+        function loadScanResults() {
+            $.getJSON("/api/scan/getScans", function(data) {
+                $("#scanResultsTable").empty();
+                data.forEach(scan => {
+                    let row = `<tr>
+                        <td>${scan.scanId}</td>
+                        <td>${scan.assetName}</td>
+                        <td>${scan.ipAddress}</td>
+                        <td>${scan.scanType}</td>
+                        <td>${scan.result === "Pass" ? "Pass" : "Fail"}</td>
+                        <td>${new Date(scan.scanTime).toLocaleString()}</td>
+                        <td>${scan.status}</td>
+                    </tr>`;
+                    $("#scanResultsTable").append(row);
+                });
+            });
+        }
+
+        loadScanResults();
+    });
+</script>

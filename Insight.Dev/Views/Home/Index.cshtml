@@ -1,0 +1,429 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AthenGuard Insight Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.18/signalr.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            padding: 20px;
+            background: #f8f9fa;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .critical {
+            background: #ffcccc;
+        }
+
+        .chart-container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .search-container {
+            margin: 20px 0;
+        }
+
+        .deploy-button {
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+            .deploy-button:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;}
+    </style>
+</head>
+<body>
+    <h2>Dashboard Overview</h2>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search by Asset Name or IP...">
+        <button onclick="filterAssets()">Search</button>
+    </div>
+
+    <div class="grid-container">
+        <div class="card">
+            <h3>Total Assets</h3>
+            <p id="total-assets">120</p>
+        </div>
+        <div class="card">
+            <h3>Active Assets</h3>
+            <p id="active-assets">95</p>
+        </div>
+        <div class="card">
+            <h3>Inactive Assets</h3>
+            <p id="inactive-assets">25</p>
+        </div>
+        <div class="card critical">
+            <h3>Critical Assets</h3>
+            <p id="critical-assets">8</p>
+        </div>
+        <div class="card">
+            <h3>Assets with Agents</h3>
+            <p id="agent-assets">70</p>
+        </div>
+        <div class="card">
+            <h3>Cloud Assets</h3>
+            <p id="cloud-assets">30</p>
+        </div>
+    </div>
+
+    <h3>Asset Listing</h3>
+    <table border="1" width="100%">
+        <thead>
+            <tr>
+                <th>Asset Name</th>
+                <th>IP Address</th>
+                <th>Status</th>
+                <th>Agent Installed</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Server-001</td>
+                <td>192.168.1.10</td>
+                <td>Online</td>
+                <td id="agent-status-1">No</td>
+                <td><button class="deploy-button" onclick="deployAgent(1)">Deploy Agent</button></td>
+            </tr>
+            <tr>
+                <td>Workstation-002</td>
+                <td>192.168.1.20</td>
+                <td>Offline</td>
+                <td id="agent-status-2">No</td>
+                <td><button class="deploy-button" onclick="deployAgent(2)">Deploy Agent</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Asset Distribution</h3>
+    <div class="chart-container">
+        <canvas id="assetChart"></canvas>
+    </div>
+
+    <h3>Scan Progress</h3>
+    <div class="chart-container">
+        <canvas id="scanChart"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("Initializing dashboard...");
+
+            var assetCanvas = document.getElementById('assetChart');
+            var scanCanvas = document.getElementById('scanChart');
+
+            if (assetCanvas && scanCanvas) {
+                var assetCtx = assetCanvas.getContext('2d');
+                var assetChart = new Chart(assetCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Active Assets', 'Inactive Assets', 'Assets with Agents', 'Cloud Assets'],
+                        datasets: [{
+                            data: [95, 25, 70, 30],
+                            backgroundColor: ['#36A2EB', '#FF6384', '#4CAF50', '#FFA500']
+                        }]
+                    }
+                });
+
+                var scanCtx = scanCanvas.getContext('2d');
+                var scanChart = new Chart(scanCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM'],
+                        datasets: [{
+                            label: 'Scan Progress',
+                            data: [10, 25, 50, 75],
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    }
+                });
+            } else {
+                console.error("Chart canvas elements not found.");
+            }
+
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl("/dashboardHub")
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            connection.on("UpdateDashboard", function (data) {
+                if (data) {
+                    document.getElementById("total-assets").innerText = data.totalAssets || 0;
+                    document.getElementById("active-assets").innerText = data.activeAssets || 0;
+                    document.getElementById("inactive-assets").innerText = data.inactiveAssets || 0;
+                    document.getElementById("critical-assets").innerText = data.criticalAssets || 0;
+                    document.getElementById("agent-assets").innerText = data.agentAssets || 0;
+                    document.getElementById("cloud-assets").innerText = data.cloudAssets || 0;
+                }
+            });
+
+            connection.start()
+                .then(function () {
+                    console.log("SignalR connected.");
+                })
+                .catch(function (err) {
+                    console.error("SignalR connection error:", err);
+                });
+        });
+
+        function filterAssets() {
+            var input = document.getElementById('searchInput').value.toLowerCase();
+            alert('Filtering assets by: ' + input);
+        }
+
+         function deployAgent(assetId) {
+            let button = document.querySelector(`button[onclick='deployAgent(${assetId})']`);
+            let statusCell = document.getElementById(`agent-status-${assetId}`);
+
+            button.disabled = true;
+            button.innerText = "Deploying...";
+
+            setTimeout(() => {
+                statusCell.innerText = "Yes";
+                button.innerText = "Agent Installed";
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AthenGuard Insight Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            padding: 20px;
+            background: #f8f9fa;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .critical {
+            background: #ffcccc;
+        }
+
+        .chart-container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .search-container {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>Dashboard Overview</h2>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search by Asset Name or IP...">
+        <button onclick="filterAssets()">Search</button>
+    </div>
+
+    <div class="grid-container">
+        <div class="card">
+            <h3>Total Assets</h3>
+            <p id="total-assets">120</p>
+        </div>
+        <div class="card">
+            <h3>Active Assets</h3>
+            <p id="active-assets">95</p>
+        </div>
+        <div class="card">
+            <h3>Inactive Assets</h3>
+            <p id="inactive-assets">25</p>
+        </div>
+        <div class="card critical">
+            <h3>Critical Assets</h3>
+            <p id="critical-assets">8</p>
+        </div>
+        <div class="card">
+            <h3>Assets with Agents</h3>
+            <p id="agent-assets">70</p>
+        </div>
+        <div class="card">
+            <h3>Cloud Assets</h3>
+            <p id="cloud-assets">30</p>
+        </div>
+    </div>
+
+    <h3>Asset Distribution</h3>
+    <div class="chart-container">
+        <canvas id="assetChart"></canvas>
+    </div>
+
+    <h3>Scan Progress</h3>
+    <div class="chart-container">
+        <canvas id="scanChart"></canvas>
+    </div>
+
+    <script>
+        var assetCtx = document.getElementById('assetChart').getContext('2d');
+        var assetChart = new Chart(assetCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Active Assets', 'Inactive Assets', 'Assets with Agents', 'Cloud Assets'],
+                datasets: [{
+                    data: [95, 25, 70, 30],
+                    backgroundColor: ['#36A2EB', '#FF6384', '#4CAF50', '#FFA500']
+                }]
+            }
+        });
+
+        var scanCtx = document.getElementById('scanChart').getContext('2d');
+        var scanChart = new Chart(scanCtx, {
+            type: 'line',
+            data: {
+                labels: ['10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM'],
+                datasets: [{
+                    label: 'Scan Progress',
+                    data: [10, 25, 50, 75],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            }
+        });
+
+        function filterAssets() {
+            var input = document.getElementById('searchInput').value.toLowerCase();
+            alert('Filtering assets by: ' + input);
+        }
+    </script>
+</body>
+</html>
+ *@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@* @model dynamic
+
+<h2>Dashboard Overview</h2>
+
+<div class="grid-container">
+    <div class="card">
+        <h3>Total Assets</h3>
+        <p>@Model.Summary.TotalAssets</p>
+    </div>
+    <div class="card">
+        <h3>Active Assets</h3>
+        <p>@Model.Summary.ActiveAssets</p>
+    </div>
+    <div class="card">
+        <h3>Inactive Assets</h3>
+        <p>@Model.Summary.InactiveAssets</p>
+    </div>
+    <div class="card critical">
+        <h3>Critical Assets</h3>
+        <p>@Model.Summary.CriticalAssets</p>
+    </div>
+</div>
+
+<h3>Scan Progress</h3>
+<p>@Model.ScanProgress.Status: @Model.ScanProgress.ScannedAssets / @Model.ScanProgress.TotalAssetsToScan scanned</p>
+
+<h3>Alerts</h3>
+<ul>
+    @foreach (var alert in Model.Alerts)
+    {
+        <li class="@alert.Severity">@alert.Message - @alert.Timestamp</li>
+    }
+</ul>
+
+<h3>Recent Activities</h3>
+<ul>
+    @foreach (var activity in Model.RecentActivities)
+    {
+        <li>@activity.Description - @activity.Timestamp</li>
+    }
+</ul>
+
+<style>
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+    .card {
+        padding: 20px;
+        background: #f8f9fa;
+        text-align: center;
+        border-radius: 8px;
+    }
+    .critical { background: #ffcccc; }
+</style>
+ *@

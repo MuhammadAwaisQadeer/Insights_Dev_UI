@@ -1,0 +1,9 @@
+﻿@model DiscoverySetting
+
+<h2>Setting Details</h2>
+<p><strong>Setting ID:</strong> @Model.SettingId</p>
+<p><strong>Parameter:</strong> @Model.Parameter</p>
+<p><strong>Value:</strong> @Model.Value</p>
+
+<a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.SettingId">Edit</a>
+<a class="btn btn-secondary" asp-action="Index">Back to List</a>
