@@ -8,19 +8,19 @@
                 <div class="card-body">
                     <ul class="nav nav-tabs mb-3" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="tab-azure" data-bs-toggle="tab" type="button" role="tab" onclick="showForm('azure')">Azure</button>
+                            <button class="nav-link active" id="tab-azure" data-bs-toggle="tab" data-bs-target="#azure-form" type="button" role="tab">Azure</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="tab-aws" data-bs-toggle="tab" type="button" role="tab" onclick="showForm('aws')">AWS</button>
+                            <button class="nav-link" id="tab-aws" data-bs-toggle="tab" data-bs-target="#aws-form" type="button" role="tab">AWS</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="tab-gcp" data-bs-toggle="tab" type="button" role="tab" onclick="showForm('gcp')">GCP</button>
+                            <button class="nav-link" id="tab-gcp" data-bs-toggle="tab" data-bs-target="#gcp-form" type="button" role="tab">GCP</button>
                         </li>
                     </ul>
 
                     <div class="tab-content">
                         <!-- Azure Form -->
-                        <div id="azure-form" class="tab-pane fade show active">
+                        <div id="azure-form" class="tab-pane fade show active" role="tabpanel">
                             <div class="form-floating mb-3">
                                 <input type="text" id="azure-subscriptionId" class="form-control" placeholder="Enter Azure Subscription ID">
                                 <label>Azure Subscription ID</label>
@@ -37,7 +37,7 @@
                         </div>
 
                         <!-- AWS Form -->
-                        <div id="aws-form" class="tab-pane fade">
+                        <div id="aws-form" class="tab-pane fade" role="tabpanel">
                             <div class="form-floating mb-3">
                                 <input type="text" id="aws-accessKey" class="form-control" placeholder="Enter AWS Access Key">
                                 <label>AWS Access Key</label>
@@ -54,7 +54,7 @@
                         </div>
 
                         <!-- GCP Form -->
-                        <div id="gcp-form" class="tab-pane fade">
+                        <div id="gcp-form" class="tab-pane fade" role="tabpanel">
                             <div class="form-floating mb-3">
                                 <input type="text" id="gcp-projectId" class="form-control" placeholder="Enter GCP Project ID">
                                 <label>GCP Project ID</label>
@@ -77,18 +77,6 @@
 </div>
 
 <script>
-    function showForm(provider) {
-        document.getElementById("azure-form").style.display = provider === "azure" ? "block" : "none";
-        document.getElementById("aws-form").style.display = provider === "aws" ? "block" : "none";
-        document.getElementById("gcp-form").style.display = provider === "gcp" ? "block" : "none";
-
-        document.getElementById("tab-azure").classList.remove("active");
-        document.getElementById("tab-aws").classList.remove("active");
-        document.getElementById("tab-gcp").classList.remove("active");
-
-        document.getElementById(`tab-${provider}`).classList.add("active");
-    }
-
     function connectCloud(provider) {
         let requestBody;
 

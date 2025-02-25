@@ -3,35 +3,41 @@
 <h2 class="text-center mb-4">🚀 Asset Inventory</h2>
 
 <div class="container">
-    <input id="searchInput" class="form-control mb-3" type="text" placeholder="🔍 Search assets..." />
-
-    <table class="table table-hover table-striped table-bordered rounded shadow-sm">
-        <thead class="table-dark text-center">
-            <tr>
-                <th>Name</th>
-                <th>IP Address</th>
-                <th>OS</th>
-                <th>Status</th>
-                <th>Risk Level</th>
-            </tr>
-        </thead>
-        <tbody id="assetTable">
-            @foreach (var asset in Model)
-            {
+    <input id="searchInput" class="form-control mb-4 shadow-sm rounded-3" type="text" placeholder="🔍 Search assets..." />
+    @* <!-- No results row (hidden by default) --> *@
+    @* <div id="noResults" class="text-center text-danger fw-bold mt-3" style="display: none;"> *@
+    @*     🚫 No matching records found. *@
+    @* </div> *@
+    <div class="table-responsive">
+        <table class="table table-hover table-striped table-bordered shadow-sm rounded-4">
+            <thead class="table-dark text-center">
                 <tr>
-                    <td>@asset.Name</td>
-                    <td>@asset.IPAddress</td>
-                    <td>@asset.OperatingSystem</td>
-                    <td>@asset.Status</td>
-                    <td>@asset.RiskLevel</td>
+                    <th>Name</th>
+                    <th>IP Address</th>
+                    <th>OS</th>
+                    <th>Status</th>
+                    <th>Risk Level</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody id="assetTable">
+                @foreach (var asset in Model)
+                {
+                    <tr>
+                        <td>@asset.Name</td>
+                        <td>@asset.IPAddress</td>
+                        <td>@asset.OperatingSystem</td>
+                        <td>@asset.Status</td>
+                        <td>@asset.RiskLevel</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+      
+    </div>
 
     <!-- Pagination Controls -->
     <nav>
-        <ul class="pagination justify-content-center" id="pagination"></ul>
+        <ul class="pagination justify-content-center gap-1" id="pagination"></ul>
     </nav>
 </div>
 
@@ -39,48 +45,87 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const rowsPerPage = 10;
-        const tableRows = document.querySelectorAll("#assetTable tr");
+        const tableRows = Array.from(document.querySelectorAll("#assetTable tr"));
         const pagination = document.getElementById("pagination");
         const searchInput = document.getElementById("searchInput");
+        const noResults = document.getElementById("noResults");
 
+        let filteredRows = [...tableRows];
         let currentPage = 1;
 
         function displayPage(page) {
             const start = (page - 1) * rowsPerPage;
             const end = start + rowsPerPage;
-            tableRows.forEach((row, index) => {
+
+            filteredRows.forEach((row, index) => {
                 row.style.display = (index >= start && index < end) ? "" : "none";
             });
+
+            // Show/hide "No results" message
+            noResults.style.display = filteredRows.length === 0 ? "block" : "none";
         }
 
         function setupPagination() {
             pagination.innerHTML = "";
-            const pageCount = Math.ceil(tableRows.length / rowsPerPage);
-            for (let i = 1; i <= pageCount; i++) {
-                const li = document.createElement("li");
-                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-                li.addEventListener("click", function (e) {
+            const pageCount = Math.ceil(filteredRows.length / rowsPerPage);
+
+            if (pageCount > 1) {
+                // Previous Button
+                const prev = document.createElement("li");
+                prev.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+                prev.innerHTML = `<a class="page-link" href="#">❮</a>`;
+                prev.addEventListener("click", function (e) {
                     e.preventDefault();
-                    currentPage = i;
-                    displayPage(currentPage);
-                    setupPagination();
+                    if (currentPage > 1) {
+                        currentPage--;
+                        updateView();
+                    }
                 });
-                pagination.appendChild(li);
+                pagination.appendChild(prev);
+
+                // Page Numbers
+                for (let i = 1; i <= pageCount; i++) {
+                    const li = document.createElement("li");
+                    li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                    li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                    li.addEventListener("click", function (e) {
+                        e.preventDefault();
+                        currentPage = i;
+                        updateView();
+                    });
+                    pagination.appendChild(li);
+                }
+
+                // Next Button
+                const next = document.createElement("li");
+                next.className = `page-item ${currentPage === pageCount ? 'disabled' : ''}`;
+                next.innerHTML = `<a class="page-link" href="#">❯</a>`;
+                next.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    if (currentPage < pageCount) {
+                        currentPage++;
+                        updateView();
+                    }
+                });
+                pagination.appendChild(next);
             }
         }
 
-        searchInput.addEventListener("input", function () {
-            const filter = searchInput.value.toLowerCase();
-            tableRows.forEach((row) => {
-                row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
-            });
-            currentPage = 1;
+        function updateView() {
             displayPage(currentPage);
             setupPagination();
+        }
+
+        searchInput.addEventListener("input", function () {
+            const filter = searchInput.value.toLowerCase().trim();
+            filteredRows = tableRows.filter(row =>
+                row.textContent.toLowerCase().includes(filter)
+            );
+            currentPage = 1;
+            updateView();
         });
 
-        displayPage(currentPage);
-        setupPagination();
+        // Initial view
+        updateView();
     });
 </script>
