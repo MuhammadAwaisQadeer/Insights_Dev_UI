@@ -83,11 +83,10 @@
                 </div>
             </div>
         </div>
-
-        <!-- Updated Table Section -->
+        <!-- Updated Table Section with Scroll Support -->
         <h3 class="mt-8 text-xl font-bold">Asset Listing</h3>
-        <div class="table-responsive px-4">
-            <table class="table table-bordered table-hover table-striped w-full border-collapse border border-gray-300">
+        <div class="table-responsive px-4" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table class="table table-bordered table-hover table-striped w-full border-collapse border border-gray-300 min-w-[600px]">
                 <thead class="bg-dark text-white">
                     <tr>
                         <th class="p-2">Asset Name</th>
@@ -103,14 +102,18 @@
                         <td class="p-2">192.168.1.10</td>
                         <td class="p-2"><span class="bg-green-500 text-white py-1 px-3 rounded-full">Online</span></td>
                         <td class="p-2" id="agent-status-1"><span class="bg-red-500 text-white py-1 px-3 rounded-full">No</span></td>
-                        <td class="p-2"><button class="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600" onclick="deployAgent(1)">Deploy Agent</button></td>
+                        <td class="p-2">
+                            <button class="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600" onclick="deployAgent(1)">Deploy Agent</button>
+                        </td>
                     </tr>
                     <tr>
                         <td class="p-2">Workstation-002</td>
                         <td class="p-2">192.168.1.20</td>
                         <td class="p-2"><span class="bg-gray-500 text-white py-1 px-3 rounded-full">Offline</span></td>
                         <td class="p-2" id="agent-status-2"><span class="bg-red-500 text-white py-1 px-3 rounded-full">No</span></td>
-                        <td class="p-2"><button class="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600" onclick="deployAgent(2)">Deploy Agent</button></td>
+                        <td class="p-2">
+                            <button class="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600" onclick="deployAgent(2)">Deploy Agent</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
