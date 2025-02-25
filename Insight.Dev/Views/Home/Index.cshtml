@@ -149,20 +149,24 @@
             var input = document.getElementById('searchInput').value.toLowerCase();
             alert('Filtering assets by: ' + input);
         }
-
         function deployAgent(assetId) {
-            let button = document.querySelector(`button[onclick='deployAgent(${assetId})']`);
-            let statusCell = document.getElementById(`agent-status-${assetId}`);
-
-            button.disabled = true;
-            button.innerText = "Deploying...";
-
-            setTimeout(() => {
-                statusCell.innerText = "Yes";
-                button.innerText = "Agent Installed";
-                button.classList.replace("btn-success", "btn-secondary");
-            }, 3000);
-        }
+                 let button = document.querySelector(`button[onclick='deployAgent(${assetId})']`);
+                 let statusCell = document.getElementById(`agent-status-${assetId}`);
+                 button.disabled = true;
+                 button.innerText = "Deploying...";
+                 setTimeout(() => {
+                     let isInstalled = statusCell.innerText.trim() === "Yes";
+                     if (isInstalled) {
+                         statusCell.innerHTML = '<span class="bg-red-500 text-white py-1 px-3 rounded-full">No</span>';
+                     } else {
+                         statusCell.innerHTML = '<span class="bg-success text-white py-1 px-3 rounded-full">Yes</span>';
+                     }
+                     button.innerText = isInstalled ? "Deploy Agent" : "Agent Installed";
+                     button.classList.toggle("btn-success", !isInstalled);
+                     button.classList.toggle("btn-secondary", isInstalled);
+                     button.disabled = false;
+                 }, 3000);
+             }
     </script>
 </body>
 </html>
