@@ -1,54 +1,80 @@
-﻿<h2>Cloud Integration</h2>
+﻿<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-primary text-white rounded-top-4">
+                    <h2 class="mb-0">Cloud Integration</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-azure" data-bs-toggle="tab" type="button" role="tab" onclick="showForm('azure')">Azure</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-aws" data-bs-toggle="tab" type="button" role="tab" onclick="showForm('aws')">AWS</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-gcp" data-bs-toggle="tab" type="button" role="tab" onclick="showForm('gcp')">GCP</button>
+                        </li>
+                    </ul>
 
-<!-- Tabs for Different Cloud Platforms -->
-<ul class="nav nav-tabs">
-    <li class="nav-item"><a class="nav-link active" id="tab-azure" href="#" onclick="showForm('azure')">Azure</a></li>
-    <li class="nav-item"><a class="nav-link" id="tab-aws" href="#" onclick="showForm('aws')">AWS</a></li>
-    <li class="nav-item"><a class="nav-link" id="tab-gcp" href="#" onclick="showForm('gcp')">GCP</a></li>
-</ul>
+                    <div class="tab-content">
+                        <!-- Azure Form -->
+                        <div id="azure-form" class="tab-pane fade show active">
+                            <div class="form-floating mb-3">
+                                <input type="text" id="azure-subscriptionId" class="form-control" placeholder="Enter Azure Subscription ID">
+                                <label>Azure Subscription ID</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="text" id="azure-clientId" class="form-control" placeholder="Enter Client ID">
+                                <label>Client ID</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="password" id="azure-clientSecret" class="form-control" placeholder="Enter Client Secret">
+                                <label>Client Secret</label>
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="connectCloud('azure')">Connect to Azure</button>
+                        </div>
 
-<!-- Azure Form -->
-<div id="azure-form">
-    <label>Azure Subscription ID</label>
-    <input type="text" id="azure-subscriptionId" class="form-control" placeholder="Enter Azure Subscription ID">
+                        <!-- AWS Form -->
+                        <div id="aws-form" class="tab-pane fade">
+                            <div class="form-floating mb-3">
+                                <input type="text" id="aws-accessKey" class="form-control" placeholder="Enter AWS Access Key">
+                                <label>AWS Access Key</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="password" id="aws-secretKey" class="form-control" placeholder="Enter AWS Secret Key">
+                                <label>AWS Secret Key</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="text" id="aws-region" class="form-control" placeholder="Enter AWS Region">
+                                <label>Region (e.g., us-east-1)</label>
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="connectCloud('aws')">Connect to AWS</button>
+                        </div>
 
-    <label class="mt-2">Client ID</label>
-    <input type="text" id="azure-clientId" class="form-control" placeholder="Enter Client ID">
+                        <!-- GCP Form -->
+                        <div id="gcp-form" class="tab-pane fade">
+                            <div class="form-floating mb-3">
+                                <input type="text" id="gcp-projectId" class="form-control" placeholder="Enter GCP Project ID">
+                                <label>GCP Project ID</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <textarea id="gcp-serviceKey" class="form-control" placeholder="Paste GCP Service Account JSON" style="height: 150px;"></textarea>
+                                <label>Service Account Key</label>
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="connectCloud('gcp')">Connect to GCP</button>
+                        </div>
+                    </div>
 
-    <label class="mt-2">Client Secret</label>
-    <input type="password" id="azure-clientSecret" class="form-control" placeholder="Enter Client Secret">
-
-    <button class="btn btn-primary mt-3" onclick="connectCloud('azure')">Connect to Azure</button>
+                    <!-- Connected Cloud Accounts -->
+                    <h3 class="mt-5">Connected Cloud Accounts</h3>
+                    <div id="connectedAccounts" class="row gy-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
-<!-- AWS Form -->
-<div id="aws-form" style="display:none;">
-    <label>AWS Access Key</label>
-    <input type="text" id="aws-accessKey" class="form-control" placeholder="Enter AWS Access Key">
-
-    <label class="mt-2">AWS Secret Key</label>
-    <input type="password" id="aws-secretKey" class="form-control" placeholder="Enter AWS Secret Key">
-
-    <label class="mt-2">Region</label>
-    <input type="text" id="aws-region" class="form-control" placeholder="Enter AWS Region (e.g., us-east-1)">
-
-    <button class="btn btn-primary mt-3" onclick="connectCloud('aws')">Connect to AWS</button>
-</div>
-
-<!-- GCP Form -->
-<div id="gcp-form" style="display:none;">
-    <label>GCP Project ID</label>
-    <input type="text" id="gcp-projectId" class="form-control" placeholder="Enter GCP Project ID">
-
-    <label class="mt-2">Service Account Key</label>
-    <textarea id="gcp-serviceKey" class="form-control" placeholder="Paste GCP Service Account JSON"></textarea>
-
-    <button class="btn btn-primary mt-3" onclick="connectCloud('gcp')">Connect to GCP</button>
-</div>
-
-<!-- Connected Cloud Accounts -->
-<h3 class="mt-4">Connected Cloud Accounts</h3>
-<div id="connectedAccounts"></div>
 
 <script>
     function showForm(provider) {
@@ -109,10 +135,14 @@
                 accountList.innerHTML = "";
                 accounts.forEach(account => {
                     accountList.innerHTML += `
-                        <div class="cloud-account card p-3 mt-2">
-                            <strong>${account}</strong>
-                            <p>Status: <span class="text-success">Connected</span></p>
-                            <button class="btn btn-danger" onclick="disconnectCloud('${account}')">Disconnect</button>
+                        <div class="col-lg-4">
+                            <div class="card bg-light border rounded-3 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">${account}</h5>
+                                    <p class="card-text">Status: <span class="badge bg-success">Connected</span></p>
+                                    <button class="btn btn-danger w-100" onclick="disconnectCloud('${account}')">Disconnect</button>
+                                </div>
+                            </div>
                         </div>`;
                 });
             })

@@ -4,108 +4,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Initiate Network Scan</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
         }
 
         .scan-container {
             max-width: 900px;
-            margin: auto;
-            padding: 20px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
 
         .scan-btn {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
+            width: 150px;
         }
-
-            .scan-btn:disabled {
-                background-color: #ccc;
-                cursor: not-allowed;
-            }
 
         .progress {
             display: none;
-            margin-top: 10px;
-            width: 100%;
-            background: #ddd;
-            height: 20px;
-            border-radius: 5px;
-            position: relative;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: green;
-            text-align: center;
-            color: white;
-            line-height: 20px;
-            border-radius: 5px;
+            margin-top: 15px;
         }
 
         .status-completed {
-            color: green;
+            color: #28a745;
+            font-weight: bold;
         }
 
         .status-failed {
-            color: red;
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .table th {
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <h2 class="mb-3">Initiate Network Scan</h2>
+    <div class="scan-container">
+        <h2 class="mb-4 text-primary">Initiate Network Scan</h2>
 
-        <div class="input-group">
-            <label>Scan Name:</label>
+        <div class="mb-3">
+            <label class="form-label">Scan Name:</label>
             <input type="text" id="scanName" class="form-control" placeholder="Enter a unique scan name">
         </div>
 
-        <div class="input-group">
-            <label>Network Range(s):</label>
-            <textarea id="networkRange" class="form-control" placeholder="Enter CIDR ranges (e.g., 192.168.1.0/24)"></textarea>
+        <div class="mb-3">
+            <label class="form-label">Network Range(s):</label>
+            <textarea id="networkRange" class="form-control" rows="2" placeholder="Enter CIDR ranges (e.g., 192.168.1.0/24)"></textarea>
         </div>
 
-        <div class="input-group">
-            <label>Scan Type:</label>
+        <div class="mb-3">
+            <label class="form-label">Scan Type:</label>
             <select id="scanType" class="form-select">
                 <option value="quick">Quick Scan (Fast)</option>
                 <option value="full">Full Scan</option>
             </select>
         </div>
 
-        <button class="scan-btn" id="startScan">Start Scan</button>
-        <button class="scan-btn" id="cancelScan">Cancel</button>
-
-        <div class="progress">
-            <div id="scanProgressBar" class="progress-bar">0%</div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary scan-btn" id="startScan">Start Scan</button>
+            <button class="btn btn-secondary scan-btn" id="cancelScan">Cancel</button>
         </div>
 
-        <h3 class="mt-4">Recent Scans</h3>
-        <input type="text" id="searchInput" class="form-control" placeholder="Search scan name..." onkeyup="filterScans()">
+        <div class="progress mt-3">
+            <div id="scanProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;">0%</div>
+        </div>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th onclick="sortTable(0)">Scan Name</th>
-                    <th onclick="sortTable(1)">Network Range</th>
-                    <th onclick="sortTable(2)">Status</th>
-                    <th onclick="sortTable(3)">Last Run</th>
-                </tr>
-            </thead>
-            <tbody id="scanResults">
-                <tr><td colspan="4">No scans yet.</td></tr>
-            </tbody>
-        </table>
+        <h3 class="mt-5 text-secondary">Recent Scans</h3>
+        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search scan name..." onkeyup="filterScans()">
 
-        <button class="scan-btn" onclick="exportReport('csv')">Export CSV</button>
-        <button class="scan-btn" onclick="exportReport('pdf')">Export PDF</button>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th onclick="sortTable(0)">Scan Name</th>
+                        <th onclick="sortTable(1)">Network Range</th>
+                        <th onclick="sortTable(2)">Status</th>
+                        <th onclick="sortTable(3)">Last Run</th>
+                    </tr>
+                </thead>
+                <tbody id="scanResults">
+                    <tr><td colspan="4" class="text-center">No scans yet.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-outline-success" onclick="exportReport('csv')">Export CSV</button>
+            <button class="btn btn-outline-danger" onclick="exportReport('pdf')">Export PDF</button>
+        </div>
     </div>
 
     <script>
@@ -184,7 +177,6 @@
         function startProgress() {
             let progress = 0;
             const progressBar = $("#scanProgressBar");
-
             const interval = setInterval(() => {
                 if (progress >= 100) {
                     clearInterval(interval);
@@ -212,6 +204,6 @@
             window.location.href = `/api/reports/export/${type}`;
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

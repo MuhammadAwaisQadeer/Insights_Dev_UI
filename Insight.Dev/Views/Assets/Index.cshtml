@@ -1,27 +1,86 @@
 ﻿@model List<Asset>
 
-<h2>Asset Inventory</h2>
+<h2 class="text-center mb-4">🚀 Asset Inventory</h2>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>IP Address</th>
-            <th>OS</th>
-            <th>Status</th>
-            <th>Risk Level</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var asset in Model)
-        {
+<div class="container">
+    <input id="searchInput" class="form-control mb-3" type="text" placeholder="🔍 Search assets..." />
+
+    <table class="table table-hover table-striped table-bordered rounded shadow-sm">
+        <thead class="table-dark text-center">
             <tr>
-                <td>@asset.Name</td>
-                <td>@asset.IPAddress</td>
-                <td>@asset.OperatingSystem</td>
-                <td>@asset.Status</td>
-                <td>@asset.RiskLevel</td>
+                <th>Name</th>
+                <th>IP Address</th>
+                <th>OS</th>
+                <th>Status</th>
+                <th>Risk Level</th>
             </tr>
+        </thead>
+        <tbody id="assetTable">
+            @foreach (var asset in Model)
+            {
+                <tr>
+                    <td>@asset.Name</td>
+                    <td>@asset.IPAddress</td>
+                    <td>@asset.OperatingSystem</td>
+                    <td>@asset.Status</td>
+                    <td>@asset.RiskLevel</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Pagination Controls -->
+    <nav>
+        <ul class="pagination justify-content-center" id="pagination"></ul>
+    </nav>
+</div>
+
+<!-- Pagination + Search Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const rowsPerPage = 10;
+        const tableRows = document.querySelectorAll("#assetTable tr");
+        const pagination = document.getElementById("pagination");
+        const searchInput = document.getElementById("searchInput");
+
+        let currentPage = 1;
+
+        function displayPage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            tableRows.forEach((row, index) => {
+                row.style.display = (index >= start && index < end) ? "" : "none";
+            });
         }
-    </tbody>
-</table>
+
+        function setupPagination() {
+            pagination.innerHTML = "";
+            const pageCount = Math.ceil(tableRows.length / rowsPerPage);
+            for (let i = 1; i <= pageCount; i++) {
+                const li = document.createElement("li");
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    currentPage = i;
+                    displayPage(currentPage);
+                    setupPagination();
+                });
+                pagination.appendChild(li);
+            }
+        }
+
+        searchInput.addEventListener("input", function () {
+            const filter = searchInput.value.toLowerCase();
+            tableRows.forEach((row) => {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
+            });
+            currentPage = 1;
+            displayPage(currentPage);
+            setupPagination();
+        });
+
+        displayPage(currentPage);
+        setupPagination();
+    });
+</script>
